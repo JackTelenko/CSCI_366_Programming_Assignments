@@ -14,9 +14,16 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
+#include "stdio.h"
 #include "common.hpp"
 #include "Server.hpp"
+
+
+struct p1b{char board[BOARD_SIZE][BOARD_SIZE];};
+struct p2b{char board[BOARD_SIZE][BOARD_SIZE];};
+
+struct p1b p1;
+struct p1b p2;
 
 
 /**
@@ -34,25 +41,57 @@ int get_file_length(ifstream *file){
     return end - start;
 }
 
-void Server::initialize(unsigned int board_size, string p1_setup_board, string p2_setup_board){
+void Server::initialize(unsigned int board_size, string p1_setup_board, string p2_setup_board)
+{
+    ifstream selection;
     this->board_size = board_size;
-
-    this->p1_setup_board.open(p1_setup_board);
-    this->p2_setup_board.open(p2_setup_board);
-
-    printf("file length: %d\n", get_file_length(&(this->p1_setup_board)));
-    printf("calculated board size: %d\n", (board_size * (board_size+1)));
-    if(get_file_length(&(this->p1_setup_board)) != (board_size * (board_size+1))){
-        throw ServerException("Incorrect board size");
+    selection.open(p1_setup_board);
+    if(!selection){
+        throw ServerException("Failed to open " + p1_setup_board);
+    }
+    else if(!selection){
+        throw ServerException("Failed to open " + p2_setup_board);
     }
 
-    if(get_file_length(&(this->p2_setup_board)) != (board_size * (board_size+1))){
-        throw ServerException("Incorrect board size");
+    if(board_size != BOARD_SIZE){
+        throw ServerException("Need correct board size");
+    }
+    else if (p1_setup_board.length() < 4 or p2_setup_board.length() < 4){
+        throw ServerException("Need correct file name");
+    }
+    else if (board_size==BOARD_SIZE and  p1_setup_board.length() < 4 ) {
+        throw ServerException("Incorrect");
+    }
+    else if (board_size==BOARD_SIZE and  p2_setup_board.length() < 4 ) {
+        throw ServerException("Incorrect");
     }
 
-    int length = get_file_length(&(this->p1_setup_board));
-    printf("\n\n");
-    printf("file length %d\n", length);
+}
+
+Server::~Server() {
+}
+
+
+BitArray2D *Server::scan_setup_board(string setup_board_name){
+
+    int i, j, k, l;
+
+    for(int i; i < BOARD_SIZE; i++){
+        for(int j; j < BOARD_SIZE; j++){
+            if(p1.board[i][j] != '_'){
+                p1_setup_board->set(i, j);
+            }
+        }
+    }
+
+    for(int k; k < BOARD_SIZE; k++){
+        for(int l; l < BOARD_SIZE; l++){
+            if(p2.board[k][l] != '_'){
+                p2_setup_board->set(k, l);
+            }
+        }
+    }
+
 }
 
 int Server::evaluate_shot(unsigned int player, unsigned int x, unsigned int y) {
